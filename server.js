@@ -1,18 +1,42 @@
-const http = require('http');
+const port = 9000;
+const http = require("http");
+const httpStatus = require("http-status-codes");
+const db = require("./Movie-Booking-App-Backend-Code/moviebooking/models/index");
 
-const server = http.createServer((req,res)=>{
-    if(req.url === '/movies'){
-        res.write('All Movies Data in JSON format from Mongo DB');
-        res.end();
-    }else if(req.url === '/genres'){
-        res.write('All Geners Data in JSON format from Mongo DB');
-        res.end();
-    }else if(req.url === '/artists'){
-        res.write('All Artists Data in JSON format from Mongo DB');
-        res.end();
+const routeResponseMap = {
+  "/movies": "All Movies Data in JSON format from Mongo DB",
+  "/genres": "All Genres Data in JSON format from Mongo DB",
+  "/artists": "All Artists Data in JSON format from Mongo DB",
+};
 
-    }
-})
+const app = http.createServer((req, res) => {
+  let url = req.url;
+  if (routeResponseMap[url]) {
+    res.writeHead(httpStatus.StatusCodes.OK, {
+      "Content-Type": "text/html",
+    });
+    res.write(routeResponseMap[url]);
+    res.end();
+  } else {
+    res.writeHead(httpStatus.StatusCodes.NOT_FOUND, {
+      "Content-Type": "text/html",
+    });
+    res.write("Error: Page Not Found");
+    res.end();
+  }
+});
 
-server.listen(9000);
-console.log('ServerListening on port 9000...'); 
+app.listen(port);
+
+db.mongoose
+  .connect(db.url, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log("Connected to the database!");
+  })
+  .catch((err) => {
+    console.log("Cannot connect to the database!", err);
+    process.exit();
+  });
